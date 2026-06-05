@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TRPG World Status</title>
+    <link rel="stylesheet" href="/static/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="workspace">
+        <header class="topbar">
+          <div>
+            <p class="eyebrow">AllenNLP + DeepSeek</p>
+            <h1>TRPG World Status</h1>
+            <p class="subtitle">
+              输入英文叙事文本，先进行共指消解，再生成 TRPG 世界状态 JSON。
+            </p>
+          </div>
+          <div id="health" class="status">检查服务中</div>
+        </header>
+
+        <section class="storage-panel">
+          <div>
+            <p id="saveStatus" class="save-status">No saved snapshot yet.</p>
+            <p class="storage-help">
+              Snapshot 只保存在当前浏览器，不会再次调用 DeepSeek。
+            </p>
+            <p id="storageNotice" class="notice" hidden></p>
+          </div>
+
+          <div class="storage-actions">
+            <button id="saveButton" type="button" disabled>Save Snapshot</button>
+            <button id="loadButton" type="button" disabled>Load Last</button>
+            <button id="clearButton" type="button" disabled>Clear</button>
+            <button id="downloadJsonButton" type="button" disabled>Download JSON</button>
+            <button id="downloadTxtButton" type="button" disabled>Download TXT</button>
+          </div>
+        </section>
+
+        <div class="editor-grid">
+          <section class="panel input-panel">
+            <div class="panel-head">
+              <h2>原文本</h2>
+              <label class="file-button">
+                <input id="fileInput" type="file" accept=".txt,text/plain,.md,text/markdown" />
+                读取文本
+              </label>
+            </div>
+            <textarea
+              id="sourceText"
+              spellcheck="false"
+              placeholder="粘贴 The Dead 或其他英文叙事文本..."
+            ></textarea>
+            <div class="controls">
+              <label>
+                共指分块
+                <input id="maxChars" type="number" min="300" max="3000" step="100" value="1200" />
+              </label>
+              <button id="runButton" type="button">生成世界状态</button>
+            </div>
+          </section>
+
+          <section class="panel output-panel">
+            <div class="panel-head">
+              <h2>世界状态 JSON</h2>
+              <button id="copyButton" type="button" disabled>复制</button>
+            </div>
+            <pre id="output">{}</pre>
+          </section>
+        </div>
+
+        <section class="panel resolved-panel">
+          <div class="panel-head">
+            <h2>共指消解结果</h2>
+            <span id="meta"></span>
+          </div>
+          <pre id="resolvedOutput">等待生成</pre>
+        </section>
+      </section>
+    </main>
+
+    <script src="/static/app.js"></script>
+  </body>
+</html>

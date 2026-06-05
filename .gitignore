@@ -1,0 +1,11 @@
+.env
+__pycache__/
+*.pyc
+trpg_env/
+nltk_data/
+uvicorn.*.log
+*.log
+TRPG-World-Status-source.zip
+TRPG-World-Status-source/
+data/*
+!data/.gitkeep

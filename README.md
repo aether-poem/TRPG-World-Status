@@ -18,6 +18,8 @@ structures.
 ## Features
 
 - Browser-based interface for entering or loading narrative text.
+- Browser-local snapshot save/load for generated results.
+- Manual export of the full result as JSON and the coreference result as TXT.
 - Local sentence chunking with a custom tokenizer.
 - AllenNLP SpanBERT-based coreference resolution.
 - DeepSeek-powered TRPG world-state generation.
@@ -96,6 +98,10 @@ Python 3.9
 
 The `data/` directory is intentionally empty in the repository. Large model
 files, local text data, generated outputs, and API keys are not committed.
+
+Browser snapshots are stored with `localStorage`. They remain in the current
+browser only, are not uploaded to the server, and do not call DeepSeek again
+when loaded.
 
 ## Requirements
 
