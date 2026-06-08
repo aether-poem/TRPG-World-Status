@@ -11,30 +11,53 @@
       <section class="workspace">
         <header class="topbar">
           <div>
-            <p class="eyebrow">AllenNLP + DeepSeek</p>
+            <p class="eyebrow">AllenNLP + DeepSeek · 三层叙事本体</p>
             <h1>TRPG World Status</h1>
             <p class="subtitle">
-              输入英文叙事文本，先进行共指消解，再生成 TRPG 世界状态 JSON。
+              输入英文叙事文本，先进行共指消解，再生成兼顾文学阐释与 TRPG 改编的本体化世界状态。
             </p>
           </div>
           <div id="health" class="status">检查服务中</div>
         </header>
 
+        <section class="ontology-strip" aria-label="三层本体映射">
+          <div class="ontology-level">
+            <span>微观层</span>
+            <strong>人物与线索</strong>
+            <p>Character · NarrativeObject / Clue · hasOwner · evokesMemory</p>
+          </div>
+          <div class="ontology-level">
+            <span>中观层</span>
+            <strong>关系、群体与空间</strong>
+            <p>CollectiveAgent · Place · hasSocialRelationWith · belongsToCollective</p>
+          </div>
+          <div class="ontology-level">
+            <span>宏观层</span>
+            <strong>事件、任务与演化</strong>
+            <p>NarrativeEvent · Quest · OpenThread · precedes · containsQuest</p>
+          </div>
+          <div class="ontology-context">
+            <span>全局语境变量</span>
+            <strong>atmosphere · scene_state</strong>
+            <p>作为场景基调和当前整体条件，不作为独立概念类。</p>
+          </div>
+        </section>
+
         <section class="storage-panel">
           <div>
-            <p id="saveStatus" class="save-status">No saved snapshot yet.</p>
+            <p id="saveStatus" class="save-status">尚无已保存快照。</p>
             <p class="storage-help">
-              Snapshot 只保存在当前浏览器，不会再次调用 DeepSeek。
+              快照只保存在当前浏览器，读取快照不会再次调用 DeepSeek。
             </p>
             <p id="storageNotice" class="notice" hidden></p>
           </div>
 
           <div class="storage-actions">
-            <button id="saveButton" type="button" disabled>Save Snapshot</button>
-            <button id="loadButton" type="button" disabled>Load Last</button>
-            <button id="clearButton" type="button" disabled>Clear</button>
-            <button id="downloadJsonButton" type="button" disabled>Download JSON</button>
-            <button id="downloadTxtButton" type="button" disabled>Download TXT</button>
+            <button id="saveButton" type="button" disabled>保存快照</button>
+            <button id="loadButton" type="button" disabled>载入上次结果</button>
+            <button id="clearButton" type="button" disabled>清空</button>
+            <button id="downloadJsonButton" type="button" disabled>下载 JSON</button>
+            <button id="downloadTxtButton" type="button" disabled>下载共指文本</button>
           </div>
         </section>
 
@@ -57,13 +80,16 @@
                 共指分块
                 <input id="maxChars" type="number" min="300" max="3000" step="100" value="1200" />
               </label>
-              <button id="runButton" type="button">生成世界状态</button>
+              <button id="runButton" type="button">生成本体化世界状态</button>
             </div>
           </section>
 
           <section class="panel output-panel">
             <div class="panel-head">
-              <h2>世界状态 JSON</h2>
+              <div>
+                <h2>本体化世界状态 JSON</h2>
+                <p class="panel-note">items = 叙事物件/线索 · timeline = 弱结构化叙事事件</p>
+              </div>
               <button id="copyButton" type="button" disabled>复制</button>
             </div>
             <pre id="output">{}</pre>

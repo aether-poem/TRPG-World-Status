@@ -7,8 +7,8 @@ The system first applies coreference resolution to the source text, replacing
 pronouns and other referring expressions with their likely entities. It then
 sends the resolved text to the DeepSeek Chat Completions API and asks the model
 to produce a JSON world state containing characters, locations, factions, items,
-relationships, quests, timeline events, atmosphere, and unresolved story
-threads.
+relationships, quests, weakly structured timeline events, open narrative
+threads, and global context variables.
 
 This project is intended as an experimental digital humanities and interactive
 narrative prototype. It explores how NLP and large language models can support
@@ -23,6 +23,7 @@ structures.
 - Local sentence chunking with a custom tokenizer.
 - AllenNLP SpanBERT-based coreference resolution.
 - DeepSeek-powered TRPG world-state generation.
+- Three-layer ontology-oriented output for digital humanities interpretation.
 - Side-by-side display of:
   - original text,
   - coreference-resolved text,
@@ -50,6 +51,31 @@ DeepSeek Chat Completions API
   v
 Structured TRPG world-state JSON
 ```
+
+## Ontology-Oriented Output
+
+The generated JSON keeps the original practical field structure, but its
+meaning is aligned with a three-layer narrative ontology:
+
+| Layer | JSON fields | Ontology reading | Interpretation value |
+| --- | --- | --- | --- |
+| Micro | `characters`, `items` | `Character`, `NarrativeObject / Clue`, `hasOwner`, `evokesMemory` | Character psychology, local interaction, symbolic objects, and clues. |
+| Meso | `locations`, `factions`, `relationships` | `Place`, `CollectiveAgent`, `hasSocialRelationWith`, `belongsToCollective` | Social relations, group positions, spatial narrative, and faction pressure. |
+| Macro | `timeline`, `quests`, `open_threads` | `NarrativeEvent`, `Quest`, `OpenThread`, `precedes`, `containsQuest` | Plot progression, task generation, and world-state evolution. |
+
+`context_variables.atmosphere` and `context_variables.scene_state` are treated
+as global contextual constraints rather than ordinary concept classes. They
+describe the scene tone, psychological pressure, thematic atmosphere, and the
+overall current condition of the adapted scenario.
+
+Several ontology object properties are inferred from existing fields without
+requiring extra JSON fields:
+
+- `items.owner` -> `hasOwner`
+- `items.importance` and `timeline` -> `evokesMemory`
+- `factions.relationships` and `characters.description` -> `belongsToCollective`
+- `timeline` order -> `precedes`
+- `quests` and `open_threads` -> `containsQuest`
 
 ## Technology Stack
 
@@ -79,21 +105,21 @@ Python 3.9
 
 ```text
 .
-├── app.py
-├── pipeline.py
-├── requirements.txt
-├── frontend/
-│   ├── index.html
-│   ├── styles.css
-│   └── app.js
-├── utils/
-│   ├── text_processor.py
-│   └── llm_engine.py
-├── scripts/
-│   ├── download_spanbert.sh
-│   └── check_spanbert.py
-└── data/
-    └── .gitkeep
+|-- app.py
+|-- pipeline.py
+|-- requirements.txt
+|-- frontend/
+|   |-- index.html
+|   |-- styles.css
+|   `-- app.js
+|-- utils/
+|   |-- text_processor.py
+|   `-- llm_engine.py
+|-- scripts/
+|   |-- download_spanbert.sh
+|   `-- check_spanbert.py
+`-- data/
+    `-- .gitkeep
 ```
 
 The `data/` directory is intentionally empty in the repository. Large model
@@ -309,9 +335,14 @@ relationships
 timeline
 quests
 open_threads
-atmosphere
-scene_state
+context_variables
+  atmosphere
+  scene_state
 ```
+
+For backward compatibility, if the model returns legacy top-level `atmosphere`
+or `scene_state` fields, the backend normalizes them into
+`context_variables`.
 
 ## Example Coreference Behavior
 

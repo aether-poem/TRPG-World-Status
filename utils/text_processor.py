@@ -94,7 +94,8 @@ ABBREVIATIONS = {
     "U.K.",
 }
 
-CLOSING_QUOTES = {'"', "'", "”", "’", "」", "』", "）", ")", "]", "}"}
+CLOSING_QUOTES = {'"', "'", "”", "’", "』", "」", "》", "）", ")", "]", "}"}
+SENTENCE_ENDINGS = ".!?。！？"
 
 
 def local_sentence_tokenize(text):
@@ -115,7 +116,7 @@ def _split_paragraph(paragraph):
 
     while index < len(paragraph):
         char = paragraph[index]
-        if char not in ".!?。！？":
+        if char not in SENTENCE_ENDINGS:
             index += 1
             continue
 
@@ -170,6 +171,9 @@ def _is_abbreviation(text, index):
 
 def _is_sentence_boundary(text, index):
     if index >= len(text):
+        return True
+
+    if index > 0 and text[index - 1] in "。！？":
         return True
 
     next_char = text[index]

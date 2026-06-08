@@ -95,6 +95,51 @@ h2 {
   color: var(--danger);
 }
 
+.ontology-strip {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.ontology-level,
+.ontology-context {
+  min-height: 132px;
+  padding: 14px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 250, 242, 0.72);
+}
+
+.ontology-context {
+  border-color: rgba(31, 111, 120, 0.28);
+  background: rgba(31, 111, 120, 0.08);
+}
+
+.ontology-level span,
+.ontology-context span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.ontology-level strong,
+.ontology-context strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+.ontology-level p,
+.ontology-context p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.55;
+}
+
 .storage-panel {
   display: flex;
   align-items: center;
@@ -167,6 +212,12 @@ h2 {
   min-height: 54px;
   padding: 14px 16px;
   border-bottom: 1px solid var(--line);
+}
+
+.panel-note {
+  margin: 6px 0 0;
+  color: var(--muted);
+  font-size: 12px;
 }
 
 textarea,
@@ -279,6 +330,10 @@ button:disabled {
 
   .storage-actions {
     justify-content: flex-start;
+  }
+
+  .ontology-strip {
+    grid-template-columns: 1fr;
   }
 
   .editor-grid {

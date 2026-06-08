@@ -1,4 +1,5 @@
 const STORAGE_KEY = "trpg-world-status:last-snapshot";
+const WAITING_TEXT = "等待生成";
 
 const sourceText = document.querySelector("#sourceText");
 const fileInput = document.querySelector("#fileInput");
@@ -37,7 +38,7 @@ async function checkHealth() {
 
 function setBusy(isBusy) {
   runButton.disabled = isBusy;
-  runButton.textContent = isBusy ? "生成中..." : "生成世界状态";
+  runButton.textContent = isBusy ? "生成中..." : "生成本体化世界状态";
 }
 
 function hasGeneratedContent() {
@@ -59,14 +60,14 @@ function updateStorageControls() {
   loadButton.disabled = !storedSnapshot;
   clearButton.disabled = !storedSnapshot && !hasGeneratedContent();
   downloadJsonButton.disabled = !currentWorldState;
-  downloadTxtButton.disabled = !resolvedOutput.textContent.trim() || resolvedOutput.textContent === "等待生成";
+  downloadTxtButton.disabled = !resolvedOutput.textContent.trim() || resolvedOutput.textContent === WAITING_TEXT;
 
   if (lastSavedAt) {
-    saveStatus.textContent = `Last saved: ${formatDate(lastSavedAt)}`;
+    saveStatus.textContent = `上次保存：${formatDate(lastSavedAt)}`;
   } else if (storedSnapshot) {
-    saveStatus.textContent = "A saved snapshot is available.";
+    saveStatus.textContent = "当前浏览器已有保存快照。";
   } else {
-    saveStatus.textContent = "No saved snapshot yet.";
+    saveStatus.textContent = "尚无已保存快照。";
   }
 }
 
@@ -127,7 +128,7 @@ function loadSnapshot() {
   currentModel = snapshot.model || "";
   currentUsage = snapshot.usage || null;
   lastSavedAt = snapshot.savedAt || "";
-  meta.textContent = currentModel ? `Loaded snapshot · ${currentModel}` : "Loaded snapshot";
+  meta.textContent = currentModel ? `已载入快照 · ${currentModel}` : "已载入快照";
   copyButton.disabled = !currentWorldState;
   updateStorageControls();
   showStorageNotice("Loaded the last saved snapshot from this browser.", "info");
@@ -142,7 +143,7 @@ function clearSnapshot() {
   }
 
   sourceText.value = "";
-  resolvedOutput.textContent = "等待生成";
+  resolvedOutput.textContent = WAITING_TEXT;
   output.textContent = "{}";
   meta.textContent = "";
   currentWorldState = null;
@@ -225,7 +226,7 @@ runButton.addEventListener("click", async () => {
   currentWorldState = null;
   currentModel = "";
   currentUsage = null;
-  output.textContent = "正在加载 AllenNLP 模型、做共指消解，并调用 DeepSeek...";
+  output.textContent = "正在加载 AllenNLP 模型、做共指消解，并调用 DeepSeek 生成本体化世界状态...";
   resolvedOutput.textContent = "处理中...";
   meta.textContent = "";
   updateStorageControls();
