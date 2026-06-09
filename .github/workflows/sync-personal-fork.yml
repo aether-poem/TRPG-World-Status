@@ -1,0 +1,37 @@
+name: Sync personal fork from organization
+
+on:
+  schedule:
+    - cron: "17 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: sync-personal-fork-main
+  cancel-in-progress: true
+
+jobs:
+  sync:
+    if: github.repository == 'Lotus-cot/TRPG-World-Status'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out personal fork
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Fast-forward main from organization
+        shell: bash
+        run: |
+          set -euo pipefail
+          git remote add upstream https://github.com/aether-poem/TRPG-World-Status.git
+          git fetch upstream main
+
+          if git merge-base --is-ancestor origin/main upstream/main; then
+            git push origin upstream/main:main
+          else
+            echo "Personal and organization main branches have diverged. Sync stopped to avoid overwriting commits."
+            exit 1
+          fi
