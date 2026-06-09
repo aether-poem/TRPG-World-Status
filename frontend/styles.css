@@ -30,7 +30,7 @@ body {
 .snowfield {
   position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 3;
   overflow: hidden;
   pointer-events: none;
 }
@@ -39,12 +39,12 @@ body {
   position: absolute;
   top: -8vh;
   left: var(--snow-x);
-  color: var(--snow);
+  color: var(--snow-color, var(--snow));
   font-family: Georgia, "Times New Roman", serif;
   font-size: var(--snow-size);
   line-height: 1;
   opacity: var(--snow-opacity);
-  filter: drop-shadow(0 1px 2px rgba(42, 73, 78, 0.22));
+  filter: drop-shadow(0 1px 2px rgba(22, 66, 73, 0.34));
   animation: snowfall var(--snow-duration) linear var(--snow-delay) infinite;
 }
 
@@ -456,8 +456,7 @@ button:disabled {
 
 @media (prefers-reduced-motion: reduce) {
   .snowflake {
-    animation: none;
-    display: none;
+    animation-duration: 32s;
   }
 
   .ontology-tab {

@@ -52,27 +52,31 @@ const WORLD_VIEWS = {
 };
 
 function createSnowfield() {
-  if (!snowfield || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  if (!snowfield) {
     return;
   }
 
-  const symbols = ["❄", "❅", "❆", "·"];
+  const symbols = ["❄", "❅", "❆", "✻", "·"];
   const fragment = document.createDocumentFragment();
 
-  for (let index = 0; index < 46; index += 1) {
+  for (let index = 0; index < 78; index += 1) {
     const flake = document.createElement("span");
-    const edgePosition = Math.random() < 0.5
-      ? Math.random() * 23
-      : 77 + Math.random() * 23;
+    const edgePosition = Math.random() < 0.7
+      ? (Math.random() < 0.5 ? Math.random() * 25 : 75 + Math.random() * 25)
+      : 25 + Math.random() * 50;
 
     flake.className = "snowflake";
     flake.textContent = symbols[Math.floor(Math.random() * symbols.length)];
     flake.style.setProperty("--snow-x", `${edgePosition.toFixed(2)}vw`);
-    flake.style.setProperty("--snow-size", `${(8 + Math.random() * 14).toFixed(1)}px`);
-    flake.style.setProperty("--snow-opacity", `${(0.28 + Math.random() * 0.52).toFixed(2)}`);
-    flake.style.setProperty("--snow-duration", `${(12 + Math.random() * 18).toFixed(1)}s`);
+    flake.style.setProperty("--snow-size", `${(11 + Math.random() * 17).toFixed(1)}px`);
+    flake.style.setProperty("--snow-opacity", `${(0.48 + Math.random() * 0.42).toFixed(2)}`);
+    flake.style.setProperty("--snow-duration", `${(10 + Math.random() * 15).toFixed(1)}s`);
     flake.style.setProperty("--snow-delay", `${(-Math.random() * 28).toFixed(1)}s`);
-    flake.style.setProperty("--snow-drift", `${(-36 + Math.random() * 72).toFixed(1)}px`);
+    flake.style.setProperty("--snow-drift", `${(-54 + Math.random() * 108).toFixed(1)}px`);
+    flake.style.setProperty(
+      "--snow-color",
+      Math.random() < 0.55 ? "rgba(30, 92, 103, 0.72)" : "rgba(255, 255, 255, 0.96)"
+    );
     fragment.appendChild(flake);
   }
 
