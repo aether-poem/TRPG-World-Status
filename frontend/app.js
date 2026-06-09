@@ -1,6 +1,7 @@
 const STORAGE_KEY = "trpg-world-status:last-snapshot";
 const WAITING_TEXT = "等待生成";
 
+const snowfield = document.querySelector("#snowfield");
 const sourceText = document.querySelector("#sourceText");
 const fileInput = document.querySelector("#fileInput");
 const maxChars = document.querySelector("#maxChars");
@@ -49,6 +50,34 @@ const WORLD_VIEWS = {
     fields: ["context_variables"],
   },
 };
+
+function createSnowfield() {
+  if (!snowfield || window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return;
+  }
+
+  const symbols = ["❄", "❅", "❆", "·"];
+  const fragment = document.createDocumentFragment();
+
+  for (let index = 0; index < 46; index += 1) {
+    const flake = document.createElement("span");
+    const edgePosition = Math.random() < 0.5
+      ? Math.random() * 23
+      : 77 + Math.random() * 23;
+
+    flake.className = "snowflake";
+    flake.textContent = symbols[Math.floor(Math.random() * symbols.length)];
+    flake.style.setProperty("--snow-x", `${edgePosition.toFixed(2)}vw`);
+    flake.style.setProperty("--snow-size", `${(8 + Math.random() * 14).toFixed(1)}px`);
+    flake.style.setProperty("--snow-opacity", `${(0.28 + Math.random() * 0.52).toFixed(2)}`);
+    flake.style.setProperty("--snow-duration", `${(12 + Math.random() * 18).toFixed(1)}s`);
+    flake.style.setProperty("--snow-delay", `${(-Math.random() * 28).toFixed(1)}s`);
+    flake.style.setProperty("--snow-drift", `${(-36 + Math.random() * 72).toFixed(1)}px`);
+    fragment.appendChild(flake);
+  }
+
+  snowfield.appendChild(fragment);
+}
 
 async function checkHealth() {
   try {
@@ -345,4 +374,5 @@ if (initialSnapshot) {
 }
 updateStorageControls();
 renderWorldState();
+createSnowfield();
 checkHealth();
