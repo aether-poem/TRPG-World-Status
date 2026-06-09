@@ -104,11 +104,23 @@ h2 {
 
 .ontology-level,
 .ontology-context {
+  display: block;
   min-height: 132px;
   padding: 14px;
   border: 1px solid var(--line);
   border-radius: 8px;
   background: rgba(255, 250, 242, 0.72);
+  color: var(--ink);
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 160ms ease, background 160ms ease, transform 160ms ease;
+}
+
+.ontology-tab:hover,
+.ontology-tab.active {
+  border-color: var(--accent);
+  background: rgba(31, 111, 120, 0.1);
+  transform: translateY(-1px);
 }
 
 .ontology-context {
@@ -218,6 +230,24 @@ h2 {
   margin: 6px 0 0;
   color: var(--muted);
   font-size: 12px;
+}
+
+.output-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.view-button {
+  border-color: var(--line);
+  background: transparent;
+  color: var(--muted);
+}
+
+.view-button.active {
+  border-color: var(--accent);
+  background: rgba(31, 111, 120, 0.1);
+  color: var(--accent-strong);
 }
 
 textarea,
@@ -330,6 +360,11 @@ button:disabled {
 
   .storage-actions {
     justify-content: flex-start;
+  }
+
+  .output-actions {
+    align-items: stretch;
+    flex-direction: column;
   }
 
   .ontology-strip {

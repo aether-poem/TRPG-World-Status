@@ -7,6 +7,8 @@ const maxChars = document.querySelector("#maxChars");
 const runButton = document.querySelector("#runButton");
 const copyButton = document.querySelector("#copyButton");
 const output = document.querySelector("#output");
+const worldViewDescription = document.querySelector("#worldViewDescription");
+const worldViewButtons = document.querySelectorAll("[data-world-view]");
 const resolvedOutput = document.querySelector("#resolvedOutput");
 const meta = document.querySelector("#meta");
 const health = document.querySelector("#health");
@@ -23,6 +25,30 @@ let currentModel = "";
 let currentUsage = null;
 let lastSavedAt = "";
 let noticeTimer = null;
+let activeWorldView = "full";
+
+const WORLD_VIEWS = {
+  full: {
+    label: "完整 JSON",
+    fields: null,
+  },
+  micro: {
+    label: "微观层：人物与叙事物件/线索",
+    fields: ["characters", "items"],
+  },
+  meso: {
+    label: "中观层：地点、群体行动者与社会关系",
+    fields: ["locations", "factions", "relationships"],
+  },
+  macro: {
+    label: "宏观层：弱结构化叙事事件、任务与开放线索",
+    fields: ["timeline", "quests", "open_threads"],
+  },
+  context: {
+    label: "全局语境变量：氛围与当前场景状态",
+    fields: ["context_variables"],
+  },
+};
 
 async function checkHealth() {
   try {
@@ -39,6 +65,43 @@ async function checkHealth() {
 function setBusy(isBusy) {
   runButton.disabled = isBusy;
   runButton.textContent = isBusy ? "生成中..." : "生成本体化世界状态";
+}
+
+function getVisibleWorldState() {
+  if (!currentWorldState || typeof currentWorldState !== "object") {
+    return {};
+  }
+
+  const view = WORLD_VIEWS[activeWorldView];
+  if (!view || !view.fields) {
+    return currentWorldState;
+  }
+
+  return Object.fromEntries(
+    view.fields.map((field) => [field, currentWorldState[field] ?? emptyValueForField(field)])
+  );
+}
+
+function emptyValueForField(field) {
+  return field === "context_variables" ? {} : [];
+}
+
+function renderWorldState() {
+  output.textContent = JSON.stringify(getVisibleWorldState(), null, 2);
+  const view = WORLD_VIEWS[activeWorldView] || WORLD_VIEWS.full;
+  worldViewDescription.textContent = `当前显示：${view.label}`;
+
+  worldViewButtons.forEach((button) => {
+    const isActive = button.dataset.worldView === activeWorldView;
+    button.classList.toggle("active", isActive);
+    button.setAttribute("aria-pressed", String(isActive));
+  });
+}
+
+function setWorldView(viewName) {
+  if (!WORLD_VIEWS[viewName]) return;
+  activeWorldView = viewName;
+  renderWorldState();
 }
 
 function hasGeneratedContent() {
@@ -123,7 +186,7 @@ function loadSnapshot() {
   sourceText.value = snapshot.sourceText || "";
   resolvedOutput.textContent = snapshot.resolvedText || "";
   currentWorldState = snapshot.worldState || null;
-  output.textContent = currentWorldState ? JSON.stringify(currentWorldState, null, 2) : "{}";
+  renderWorldState();
   maxChars.value = snapshot.maxChars || 1200;
   currentModel = snapshot.model || "";
   currentUsage = snapshot.usage || null;
@@ -144,9 +207,10 @@ function clearSnapshot() {
 
   sourceText.value = "";
   resolvedOutput.textContent = WAITING_TEXT;
-  output.textContent = "{}";
-  meta.textContent = "";
   currentWorldState = null;
+  activeWorldView = "full";
+  renderWorldState();
+  meta.textContent = "";
   currentModel = "";
   currentUsage = null;
   lastSavedAt = "";
@@ -213,6 +277,9 @@ loadButton.addEventListener("click", loadSnapshot);
 clearButton.addEventListener("click", clearSnapshot);
 downloadJsonButton.addEventListener("click", downloadFullJson);
 downloadTxtButton.addEventListener("click", downloadResolvedText);
+worldViewButtons.forEach((button) => {
+  button.addEventListener("click", () => setWorldView(button.dataset.worldView));
+});
 
 runButton.addEventListener("click", async () => {
   const text = sourceText.value.trim();
@@ -249,7 +316,8 @@ runButton.addEventListener("click", async () => {
     currentWorldState = payload.world_state;
     currentModel = payload.model || "";
     currentUsage = payload.usage || null;
-    output.textContent = JSON.stringify(payload.world_state, null, 2);
+    activeWorldView = "full";
+    renderWorldState();
     resolvedOutput.textContent = payload.resolved_text || "";
     meta.textContent = `${payload.resolved_chunks.length} 个文本块 · ${payload.model}`;
     copyButton.disabled = false;
@@ -276,4 +344,5 @@ if (initialSnapshot) {
   lastSavedAt = initialSnapshot.savedAt || "";
 }
 updateStorageControls();
+renderWorldState();
 checkHealth();

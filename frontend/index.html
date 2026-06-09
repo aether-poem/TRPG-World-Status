@@ -20,27 +20,27 @@
           <div id="health" class="status">检查服务中</div>
         </header>
 
-        <section class="ontology-strip" aria-label="三层本体映射">
-          <div class="ontology-level">
+        <section class="ontology-strip" aria-label="按本体层次筛选世界状态">
+          <button class="ontology-level ontology-tab" type="button" data-world-view="micro">
             <span>微观层</span>
             <strong>人物与线索</strong>
             <p>Character · NarrativeObject / Clue · hasOwner · evokesMemory</p>
-          </div>
-          <div class="ontology-level">
+          </button>
+          <button class="ontology-level ontology-tab" type="button" data-world-view="meso">
             <span>中观层</span>
             <strong>关系、群体与空间</strong>
             <p>CollectiveAgent · Place · hasSocialRelationWith · belongsToCollective</p>
-          </div>
-          <div class="ontology-level">
+          </button>
+          <button class="ontology-level ontology-tab" type="button" data-world-view="macro">
             <span>宏观层</span>
             <strong>事件、任务与演化</strong>
             <p>NarrativeEvent · Quest · OpenThread · precedes · containsQuest</p>
-          </div>
-          <div class="ontology-context">
+          </button>
+          <button class="ontology-context ontology-tab" type="button" data-world-view="context">
             <span>全局语境变量</span>
             <strong>atmosphere · scene_state</strong>
             <p>作为场景基调和当前整体条件，不作为独立概念类。</p>
-          </div>
+          </button>
         </section>
 
         <section class="storage-panel">
@@ -88,9 +88,14 @@
             <div class="panel-head">
               <div>
                 <h2>本体化世界状态 JSON</h2>
-                <p class="panel-note">items = 叙事物件/线索 · timeline = 弱结构化叙事事件</p>
+                <p id="worldViewDescription" class="panel-note">当前显示：完整 JSON</p>
               </div>
-              <button id="copyButton" type="button" disabled>复制</button>
+              <div class="output-actions">
+                <button id="fullJsonButton" class="view-button active" type="button" data-world-view="full">
+                  完整 JSON
+                </button>
+                <button id="copyButton" type="button" disabled>复制当前视图</button>
+              </div>
             </div>
             <pre id="output">{}</pre>
           </section>

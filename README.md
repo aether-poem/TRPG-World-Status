@@ -20,6 +20,7 @@ structures.
 - Browser-based interface for entering or loading narrative text.
 - Browser-local snapshot save/load for generated results.
 - Manual export of the full result as JSON and the coreference result as TXT.
+- Clickable ontology-layer filters for micro, meso, macro, context, and full JSON views.
 - Local sentence chunking with a custom tokenizer.
 - AllenNLP SpanBERT-based coreference resolution.
 - DeepSeek-powered TRPG world-state generation.
@@ -76,6 +77,17 @@ requiring extra JSON fields:
 - `factions.relationships` and `characters.description` -> `belongsToCollective`
 - `timeline` order -> `precedes`
 - `quests` and `open_threads` -> `containsQuest`
+
+The browser interface exposes these layers as clickable filters:
+
+- Micro view: `characters`, `items`
+- Meso view: `locations`, `factions`, `relationships`
+- Macro view: `timeline`, `quests`, `open_threads`
+- Context view: `context_variables`
+- Full JSON view: the complete generated world state
+
+Filtering changes only the visible and copied JSON. Snapshot saving and JSON
+downloads always preserve the complete world-state result.
 
 ## Technology Stack
 
