@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
 
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
+import json
 import sys
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
 
 TARGET = sys.argv[1].rstrip("/") if len(sys.argv) > 1 else "http://127.0.0.1:8000"
 LISTEN_HOST = "127.0.0.1"
 LISTEN_PORT = int(sys.argv[2]) if len(sys.argv) > 2 else 8000
+UPSTREAM_TIMEOUT_SECONDS = 1800
 
 
 class ProxyHandler(BaseHTTPRequestHandler):
@@ -36,9 +38,27 @@ class ProxyHandler(BaseHTTPRequestHandler):
         )
 
         try:
-            response = urlopen(request, timeout=180)
+            response = urlopen(request, timeout=UPSTREAM_TIMEOUT_SECONDS)
         except HTTPError as error:
             response = error
+        except (TimeoutError, URLError) as error:
+            payload = json.dumps(
+                {
+                    "detail": (
+                        "The local NLP pipeline did not finish before the proxy timeout. "
+                        "The request may still be processing in WSL. Try a shorter passage "
+                        "or wait for the current generation to finish."
+                    ),
+                    "proxy_error": str(error),
+                }
+            ).encode("utf-8")
+            self.send_response(504)
+            self.send_header("Content-Type", "application/json; charset=utf-8")
+            self.send_header("Content-Length", str(len(payload)))
+            self.send_header("Cache-Control", "no-store")
+            self.end_headers()
+            self.wfile.write(payload)
+            return
 
         payload = response.read()
         self.send_response(response.status)

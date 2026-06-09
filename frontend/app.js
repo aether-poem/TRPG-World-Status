@@ -326,7 +326,7 @@ runButton.addEventListener("click", async () => {
   currentWorldState = null;
   currentModel = "";
   currentUsage = null;
-  output.textContent = "正在加载 AllenNLP 模型、做共指消解，并调用 DeepSeek 生成本体化世界状态...";
+  output.textContent = "正在加载 AllenNLP / SpanBERT、做共指消解，并调用 DeepSeek。首次生成可能需要 5-10 分钟，请保持页面打开...";
   resolvedOutput.textContent = "处理中...";
   meta.textContent = "";
   updateStorageControls();
