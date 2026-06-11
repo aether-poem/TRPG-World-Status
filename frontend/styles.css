@@ -307,6 +307,36 @@ h2 {
   gap: 8px;
 }
 
+.output-panel {
+  overflow: hidden;
+}
+
+.output-panel #output {
+  min-height: 0;
+  height: 520px;
+  max-height: 65vh;
+  overflow: auto;
+  resize: none;
+  scrollbar-color: var(--accent) rgba(189, 201, 201, 0.35);
+  scrollbar-width: thin;
+}
+
+.output-panel #output::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+.output-panel #output::-webkit-scrollbar-thumb {
+  border: 2px solid transparent;
+  border-radius: 10px;
+  background: var(--accent);
+  background-clip: padding-box;
+}
+
+.output-panel #output::-webkit-scrollbar-track {
+  background: rgba(189, 201, 201, 0.24);
+}
+
 .view-button {
   border-color: var(--line);
   background: transparent;
@@ -385,6 +415,15 @@ button,
   cursor: pointer;
 }
 
+input[type="search"] {
+  min-width: 190px;
+  padding: 9px 11px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: #fff;
+  color: var(--ink);
+}
+
 .ontology-strip button {
   min-height: 158px;
 }
@@ -407,6 +446,294 @@ button:disabled {
 
 .resolved-panel {
   margin-top: 16px;
+}
+
+.acts-panel {
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+.acts-count {
+  color: var(--accent-strong);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.section-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.acts-output {
+  display: grid;
+  gap: 16px;
+  padding: 16px;
+}
+
+.acts-empty {
+  margin: 24px 0;
+  color: var(--muted);
+  text-align: center;
+}
+
+.act-card {
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #f8faf7;
+}
+
+.act-card > header {
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--line);
+  background: linear-gradient(135deg, rgba(10, 104, 113, 0.12), rgba(255, 255, 255, 0.7));
+}
+
+.act-card > header span {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.act-card h3,
+.scene-card h4 {
+  margin: 5px 0 0;
+  font-family: Georgia, "Noto Serif CJK SC", "Songti SC", serif;
+}
+
+.act-card h3 {
+  font-size: 24px;
+}
+
+.scene-card {
+  margin: 14px 18px;
+  padding: 16px;
+  border-left: 4px solid var(--accent);
+  border-radius: 6px;
+  background: #fff;
+  box-shadow: 0 5px 16px rgba(40, 67, 70, 0.07);
+}
+
+.scene-card h4 {
+  margin-bottom: 12px;
+  color: var(--accent-strong);
+  font-size: 18px;
+}
+
+.act-detail {
+  padding: 11px 18px;
+  border-top: 1px solid rgba(189, 201, 201, 0.65);
+}
+
+.scene-card .act-detail {
+  padding: 9px 0;
+}
+
+.act-detail strong {
+  display: block;
+  margin-bottom: 5px;
+  color: var(--ink);
+  font-size: 13px;
+}
+
+.act-detail p,
+.act-detail ul {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.7;
+}
+
+.act-detail ul {
+  padding-left: 20px;
+}
+
+.graph-panel {
+  margin-top: 16px;
+  overflow: hidden;
+}
+
+.graph-head,
+.graph-actions,
+.graph-legend {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.graph-actions {
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.graph-legend {
+  flex-wrap: wrap;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--line);
+  background: rgba(236, 243, 242, 0.72);
+}
+
+.graph-filter {
+  min-height: 30px;
+  padding: 0 9px;
+  border-color: var(--line);
+  background: transparent;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.graph-filter span {
+  width: 9px;
+  height: 9px;
+  margin-right: 6px;
+  border-radius: 50%;
+  background: var(--node-color);
+}
+
+.graph-filter.active {
+  border-color: var(--accent);
+  background: rgba(10, 104, 113, 0.08);
+  color: var(--accent-strong);
+}
+
+.graph-workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 320px;
+  min-height: 740px;
+}
+
+.graph-canvas {
+  position: relative;
+  min-width: 0;
+  overflow: hidden;
+  background:
+    radial-gradient(circle at center, rgba(10, 104, 113, 0.08), transparent 48%),
+    linear-gradient(rgba(21, 39, 43, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(21, 39, 43, 0.04) 1px, transparent 1px),
+    #f7faf8;
+  background-size: auto, 32px 32px, 32px 32px, auto;
+}
+
+#graphSvg {
+  display: block;
+  width: 100%;
+  height: 740px;
+  cursor: grab;
+  touch-action: none;
+}
+
+#graphSvg:active {
+  cursor: grabbing;
+}
+
+.graph-edge {
+  fill: none;
+  stroke: rgba(42, 75, 81, 0.55);
+  stroke-width: 1.5;
+  marker-end: url(#graphArrow);
+}
+
+.graph-edge.scope {
+  stroke: rgba(63, 88, 91, 0.24);
+  stroke-width: 1.15;
+}
+
+.graph-edge.sequence {
+  stroke: rgba(118, 101, 168, 0.68);
+  stroke-dasharray: 5 4;
+}
+
+.graph-edge-label {
+  fill: #38555a;
+  font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: rgba(247, 250, 248, 0.96);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+  pointer-events: none;
+}
+
+.graph-node {
+  cursor: pointer;
+}
+
+.graph-node circle {
+  stroke: rgba(255, 255, 255, 0.94);
+  stroke-width: 3;
+  filter: drop-shadow(0 4px 7px rgba(22, 46, 50, 0.27));
+}
+
+.graph-node .node-halo {
+  fill: rgba(255, 255, 255, 0.72);
+  stroke: rgba(10, 104, 113, 0.13);
+  stroke-width: 1;
+}
+
+.graph-node.selected circle {
+  stroke: #f0b84a;
+  stroke-width: 5;
+}
+
+.graph-node text {
+  fill: var(--ink);
+  font-family: "Microsoft YaHei", "Noto Sans CJK SC", sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  paint-order: stroke;
+  stroke: rgba(246, 248, 245, 0.94);
+  stroke-width: 5px;
+  stroke-linejoin: round;
+}
+
+.graph-empty {
+  position: absolute;
+  inset: 45% 20px auto;
+  margin: 0;
+  color: var(--muted);
+  text-align: center;
+  pointer-events: none;
+}
+
+.graph-detail {
+  overflow: auto;
+  max-height: 740px;
+  padding: 20px;
+  border-left: 1px solid var(--line);
+  background: rgba(251, 250, 245, 0.97);
+}
+
+.graph-detail > span {
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.graph-detail h3 {
+  margin: 8px 0 18px;
+  font-family: Georgia, "Noto Serif CJK SC", serif;
+  font-size: 22px;
+}
+
+.graph-detail p {
+  margin: 6px 0 0;
+  color: var(--muted);
+  line-height: 1.65;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.graph-detail-row {
+  padding: 12px 0;
+  border-top: 1px solid var(--line);
+}
+
+.graph-detail-row strong {
+  color: var(--ink);
+  font-size: 13px;
 }
 
 .resolved-panel pre {
@@ -438,6 +765,22 @@ button:disabled {
   .output-actions {
     align-items: stretch;
     flex-direction: column;
+  }
+
+  .graph-head,
+  .graph-actions {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .graph-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .graph-detail {
+    max-height: none;
+    border-top: 1px solid var(--line);
+    border-left: 0;
   }
 
   .ontology-strip {

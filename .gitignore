@@ -9,3 +9,6 @@ TRPG-World-Status-source.zip
 TRPG-World-Status-source/
 data/*
 !data/.gitkeep
+
+# Local Netlify folder
+.netlify

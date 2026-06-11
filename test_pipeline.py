@@ -24,6 +24,17 @@ def test_legacy_context_fields_are_normalized():
     assert normalized["context_variables"]["scene_state"] == "Gabriel 在窗前沉思"
 
 
+def test_prompt_requests_detailed_acts_and_scenes():
+    prompt = build_world_state_prompt("Alice entered the house.")
+    assert "- acts:" in prompt
+    assert "player_choices" in prompt
+    assert "next_act_hook" in prompt
+    assert "3-6 concrete beats" in prompt
+
+    normalized = _normalize_world_state({"summary": "demo"})
+    assert normalized["acts"] == []
+
+
 def test_local_sentence_tokenizer_handles_chinese_punctuation():
     sentences = local_sentence_tokenize("他说：“雪停了吗？” 她没有回答。Alice saw Bob. She waved.")
     assert sentences == ["他说：“雪停了吗？”", "她没有回答。", "Alice saw Bob.", "She waved."]
@@ -32,5 +43,6 @@ def test_local_sentence_tokenizer_handles_chinese_punctuation():
 if __name__ == "__main__":
     test_ontology_prompt_contains_context_variables()
     test_legacy_context_fields_are_normalized()
+    test_prompt_requests_detailed_acts_and_scenes()
     test_local_sentence_tokenizer_handles_chinese_punctuation()
     print("Lightweight ontology pipeline checks passed.")

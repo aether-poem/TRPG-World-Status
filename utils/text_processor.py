@@ -34,10 +34,12 @@ def get_coref_predictor():
             }
         )
 
+    cuda_device = int(os.getenv("COREF_CUDA_DEVICE", "-1"))
+
     return Predictor.from_path(
         str(COREF_MODEL_PATH),
         predictor_name="coreference_resolution",
-        cuda_device=-1,
+        cuda_device=cuda_device,
         overrides=overrides,
     )
 
@@ -188,6 +190,7 @@ def preprocess_text(file_path):
         return split_text(f.read())
 
 
+@lru_cache(maxsize=128)
 def coref_resolve(text):
     predictor = get_coref_predictor()
     return predictor.coref_resolved(text)
