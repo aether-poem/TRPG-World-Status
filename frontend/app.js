@@ -20,6 +20,12 @@ const loadButton = document.querySelector("#loadButton");
 const clearButton = document.querySelector("#clearButton");
 const downloadJsonButton = document.querySelector("#downloadJsonButton");
 const downloadTxtButton = document.querySelector("#downloadTxtButton");
+const graphFileInput = document.querySelector("#graphFileInput");
+const actsOutput = document.querySelector("#actsOutput");
+const actsCount = document.querySelector("#actsCount");
+const downloadActsButton = document.querySelector("#downloadActsButton");
+const downloadGraphButton = document.querySelector("#downloadGraphButton");
+const downloadInteractiveGraphButton = document.querySelector("#downloadInteractiveGraphButton");
 
 let currentWorldState = null;
 let currentModel = "";
@@ -27,6 +33,8 @@ let currentUsage = null;
 let lastSavedAt = "";
 let noticeTimer = null;
 let activeWorldView = "full";
+let isBusy = false;
+let modelReady = false;
 
 const WORLD_VIEWS = {
   full: {
@@ -43,7 +51,7 @@ const WORLD_VIEWS = {
   },
   macro: {
     label: "宏观层：弱结构化叙事事件、任务与开放线索",
-    fields: ["timeline", "quests", "open_threads"],
+    fields: ["acts", "timeline", "quests", "open_threads"],
   },
   context: {
     label: "全局语境变量：氛围与当前场景状态",
@@ -87,17 +95,46 @@ async function checkHealth() {
   try {
     const response = await fetch("/api/health");
     if (!response.ok) throw new Error("health check failed");
-    health.textContent = "服务可用";
+    const payload = await response.json();
+    const modelStatus = payload.coref_model?.status;
+    modelReady = !modelStatus || ["ready", "on_demand", "unavailable"].includes(modelStatus);
+
+    if (modelStatus === "loading" || modelStatus === "pending") {
+      health.textContent = "模型预热中";
+    } else if (modelStatus === "error") {
+      health.textContent = "模型加载失败";
+      health.className = "status error";
+      setRunButtonState();
+      return;
+    } else if (modelStatus === "unavailable") {
+      health.textContent = "云端生成可用 · 无共指模型";
+    } else {
+      const seconds = payload.coref_model?.load_seconds;
+      health.textContent = seconds ? `模型就绪 · ${seconds}s` : "服务可用";
+    }
     health.className = "status ok";
   } catch {
+    modelReady = false;
     health.textContent = "服务异常";
     health.className = "status error";
   }
+  setRunButtonState();
 }
 
-function setBusy(isBusy) {
-  runButton.disabled = isBusy;
-  runButton.textContent = isBusy ? "生成中..." : "生成本体化世界状态";
+function setBusy(busy) {
+  isBusy = busy;
+  setRunButtonState();
+}
+
+function setRunButtonState() {
+  runButton.disabled = isBusy || !modelReady;
+  if (isBusy) {
+    runButton.textContent = "生成中...";
+  } else if (!modelReady) {
+    runButton.textContent = "等待模型预热";
+  } else {
+    runButton.textContent = "生成本体化世界状态";
+  }
 }
 
 function getVisibleWorldState() {
@@ -131,6 +168,91 @@ function renderWorldState() {
   });
 }
 
+function renderGraph() {
+  window.WorldGraph?.render(currentWorldState);
+}
+
+function appendActDetail(container, label, value) {
+  if (value === undefined || value === null || value === "") return;
+  if (Array.isArray(value) && value.length === 0) return;
+
+  const block = document.createElement("div");
+  block.className = "act-detail";
+  const heading = document.createElement("strong");
+  heading.textContent = label;
+  block.appendChild(heading);
+
+  if (Array.isArray(value)) {
+    const list = document.createElement("ul");
+    value.forEach((item) => {
+      const entry = document.createElement("li");
+      entry.textContent = typeof item === "string" ? item : JSON.stringify(item);
+      list.appendChild(entry);
+    });
+    block.appendChild(list);
+  } else {
+    const paragraph = document.createElement("p");
+    paragraph.textContent = typeof value === "string" ? value : JSON.stringify(value);
+    block.appendChild(paragraph);
+  }
+  container.appendChild(block);
+}
+
+function renderActs() {
+  if (!actsOutput || !actsCount) return;
+  const acts = Array.isArray(currentWorldState?.acts) ? currentWorldState.acts : [];
+  actsOutput.replaceChildren();
+  actsCount.textContent = acts.length ? `${acts.length} 幕` : "等待分幕内容";
+
+  if (!acts.length) {
+    const empty = document.createElement("p");
+    empty.className = "acts-empty";
+    empty.textContent = "新生成的 World Status 会在这里按幕和场景细化呈现。";
+    actsOutput.appendChild(empty);
+    return;
+  }
+
+  acts.forEach((act, actIndex) => {
+    const article = document.createElement("article");
+    article.className = "act-card";
+    const header = document.createElement("header");
+    const eyebrow = document.createElement("span");
+    eyebrow.textContent = `第 ${act.act_number || actIndex + 1} 幕`;
+    const title = document.createElement("h3");
+    title.textContent = act.title || `未命名幕 ${actIndex + 1}`;
+    header.append(eyebrow, title);
+    article.appendChild(header);
+
+    appendActDetail(article, "戏剧目的", act.dramatic_purpose);
+    appendActDetail(article, "开幕状态", act.opening_state);
+
+    (Array.isArray(act.scenes) ? act.scenes : []).forEach((scene, sceneIndex) => {
+      const sceneCard = document.createElement("section");
+      sceneCard.className = "scene-card";
+      const sceneTitle = document.createElement("h4");
+      sceneTitle.textContent = `场景 ${sceneIndex + 1} · ${scene.title || "未命名场景"}`;
+      sceneCard.appendChild(sceneTitle);
+      appendActDetail(sceneCard, "地点 / 时间", [scene.location, scene.time].filter(Boolean));
+      appendActDetail(sceneCard, "参与者", scene.participants);
+      appendActDetail(sceneCard, "场景目标", scene.objective);
+      appendActDetail(sceneCard, "推进节拍", scene.beats);
+      appendActDetail(sceneCard, "冲突", scene.conflict);
+      appendActDetail(sceneCard, "揭示", scene.discoveries);
+      appendActDetail(sceneCard, "玩家选择", scene.player_choices);
+      appendActDetail(sceneCard, "后果", scene.consequences);
+      appendActDetail(sceneCard, "转场", scene.transition);
+      article.appendChild(sceneCard);
+    });
+
+    appendActDetail(article, "人物变化", act.character_changes);
+    appendActDetail(article, "本幕线索", act.clues_revealed);
+    appendActDetail(article, "未决线索", act.unresolved_threads);
+    appendActDetail(article, "闭幕状态", act.closing_state);
+    appendActDetail(article, "下一幕钩子", act.next_act_hook);
+    actsOutput.appendChild(article);
+  });
+}
+
 function setWorldView(viewName) {
   if (!WORLD_VIEWS[viewName]) return;
   activeWorldView = viewName;
@@ -157,6 +279,9 @@ function updateStorageControls() {
   clearButton.disabled = !storedSnapshot && !hasGeneratedContent();
   downloadJsonButton.disabled = !currentWorldState;
   downloadTxtButton.disabled = !resolvedOutput.textContent.trim() || resolvedOutput.textContent === WAITING_TEXT;
+  downloadActsButton.disabled = !Array.isArray(currentWorldState?.acts) || currentWorldState.acts.length === 0;
+  downloadGraphButton.disabled = !currentWorldState;
+  downloadInteractiveGraphButton.disabled = !currentWorldState;
 
   if (lastSavedAt) {
     saveStatus.textContent = `上次保存：${formatDate(lastSavedAt)}`;
@@ -220,6 +345,8 @@ function loadSnapshot() {
   resolvedOutput.textContent = snapshot.resolvedText || "";
   currentWorldState = snapshot.worldState || null;
   renderWorldState();
+  renderActs();
+  renderGraph();
   maxChars.value = snapshot.maxChars || 1200;
   currentModel = snapshot.model || "";
   currentUsage = snapshot.usage || null;
@@ -228,6 +355,32 @@ function loadSnapshot() {
   copyButton.disabled = !currentWorldState;
   updateStorageControls();
   showStorageNotice("Loaded the last saved snapshot from this browser.", "info");
+}
+
+async function importGraphJson(file) {
+  if (!file) return;
+  try {
+    const payload = JSON.parse(await file.text());
+    currentWorldState = payload.worldState || payload.world_state || payload;
+    if (!currentWorldState || typeof currentWorldState !== "object" || Array.isArray(currentWorldState)) {
+      throw new Error("未找到有效的 World Status 对象");
+    }
+    sourceText.value = payload.sourceText || payload.source_text || sourceText.value;
+    resolvedOutput.textContent = payload.resolvedText || payload.resolved_text || resolvedOutput.textContent;
+    currentModel = payload.model || currentModel;
+    currentUsage = payload.usage || currentUsage;
+    activeWorldView = "full";
+    renderWorldState();
+    renderActs();
+    renderGraph();
+    copyButton.disabled = false;
+    updateStorageControls();
+    showStorageNotice("已导入 World Status JSON，并生成交互知识图谱。", "success");
+  } catch (error) {
+    showStorageNotice(`JSON 导入失败：${error.message}`, "error", 7000);
+  } finally {
+    graphFileInput.value = "";
+  }
 }
 
 function clearSnapshot() {
@@ -243,6 +396,8 @@ function clearSnapshot() {
   currentWorldState = null;
   activeWorldView = "full";
   renderWorldState();
+  renderActs();
+  renderGraph();
   meta.textContent = "";
   currentModel = "";
   currentUsage = null;
@@ -268,6 +423,35 @@ function downloadResolvedText() {
     resolvedOutput.textContent,
     "text/plain;charset=utf-8"
   );
+}
+
+function downloadActs() {
+  const savedAt = lastSavedAt || new Date().toISOString();
+  downloadFile(
+    `world-status-acts-${fileDate(savedAt)}.json`,
+    JSON.stringify({ summary: currentWorldState?.summary || "", acts: currentWorldState?.acts || [] }, null, 2),
+    "application/json"
+  );
+}
+
+function downloadGraph() {
+  const savedAt = lastSavedAt || new Date().toISOString();
+  const svg = window.WorldGraph?.exportSvg();
+  if (!svg) {
+    showStorageNotice("图谱尚未生成，无法导出。", "error");
+    return;
+  }
+  downloadFile(`world-status-graph-${fileDate(savedAt)}.svg`, svg, "image/svg+xml;charset=utf-8");
+}
+
+function downloadInteractiveGraph() {
+  const savedAt = lastSavedAt || new Date().toISOString();
+  const html = window.WorldGraph?.exportInteractiveHtml();
+  if (!html) {
+    showStorageNotice("图谱尚未生成，无法导出。", "error");
+    return;
+  }
+  downloadFile(`world-status-graph-${fileDate(savedAt)}.html`, html, "text/html;charset=utf-8");
 }
 
 function downloadFile(filename, content, type) {
@@ -310,6 +494,10 @@ loadButton.addEventListener("click", loadSnapshot);
 clearButton.addEventListener("click", clearSnapshot);
 downloadJsonButton.addEventListener("click", downloadFullJson);
 downloadTxtButton.addEventListener("click", downloadResolvedText);
+downloadActsButton.addEventListener("click", downloadActs);
+downloadGraphButton.addEventListener("click", downloadGraph);
+downloadInteractiveGraphButton.addEventListener("click", downloadInteractiveGraph);
+graphFileInput.addEventListener("change", () => importGraphJson(graphFileInput.files?.[0]));
 worldViewButtons.forEach((button) => {
   button.addEventListener("click", () => setWorldView(button.dataset.worldView));
 });
@@ -351,6 +539,8 @@ runButton.addEventListener("click", async () => {
     currentUsage = payload.usage || null;
     activeWorldView = "full";
     renderWorldState();
+    renderActs();
+    renderGraph();
     resolvedOutput.textContent = payload.resolved_text || "";
     meta.textContent = `${payload.resolved_chunks.length} 个文本块 · ${payload.model}`;
     copyButton.disabled = false;
@@ -378,5 +568,8 @@ if (initialSnapshot) {
 }
 updateStorageControls();
 renderWorldState();
+renderActs();
+renderGraph();
 createSnowfield();
 checkHealth();
+window.setInterval(checkHealth, 5000);

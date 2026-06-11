@@ -2,6 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import json
+from copy import deepcopy
+from functools import lru_cache
 from pathlib import Path
 
 from utils.llm_engine import generate_world_state
@@ -13,7 +15,8 @@ DATA_FILE = BASE_DIR / "data" / "the_dead_first_half.txt"
 OUTPUT_FILE = BASE_DIR / "data" / "trpg_output.json"
 
 
-def run_pipeline_from_text(text, max_chars=1200):
+@lru_cache(maxsize=16)
+def _run_pipeline_cached(text, max_chars):
     chunks = split_text(text, max_chars=max_chars)
     resolved_chunks = coref_resolve_many(chunks)
     resolved_text = "\n\n".join(resolved_chunks)
@@ -27,6 +30,10 @@ def run_pipeline_from_text(text, max_chars=1200):
         "model": llm_result["model"],
         "usage": llm_result["usage"],
     }
+
+
+def run_pipeline_from_text(text, max_chars=1200):
+    return deepcopy(_run_pipeline_cached(text, max_chars))
 
 
 def run_pipeline(input_file=DATA_FILE, output_file=OUTPUT_FILE):

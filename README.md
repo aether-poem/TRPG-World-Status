@@ -21,6 +21,7 @@ structures.
 - Browser-local snapshot save/load for generated results.
 - Manual export of the full result as JSON and the coreference result as TXT.
 - Clickable ontology-layer filters for micro, meso, macro, context, and full JSON views.
+- Interactive knowledge graph generated from the same World Status JSON.
 - Local sentence chunking with a custom tokenizer.
 - AllenNLP SpanBERT-based coreference resolution.
 - DeepSeek-powered TRPG world-state generation.
@@ -89,6 +90,29 @@ The browser interface exposes these layers as clickable filters:
 Filtering changes only the visible and copied JSON. Snapshot saving and JSON
 downloads always preserve the complete world-state result.
 
+## Interactive Knowledge Graph
+
+The browser turns each generated or imported World Status JSON into an
+interactive SVG knowledge graph without changing the backend JSON contract.
+Designers can:
+
+- drag nodes and pan or zoom the graph,
+- search across node names and attributes,
+- filter characters, locations, factions, items, events, quests, open threads,
+  context, and externally referenced entities,
+- click a node to inspect all of its World Status fields,
+- import a previously downloaded World Status snapshot JSON,
+- export a static SVG or a self-contained interactive HTML file.
+
+Explicit `relationships` become graph edges, `items.owner` becomes an ownership
+edge, and adjacent `timeline` entries are connected in sequence. The graph also
+keeps a World Status root node so entities that do not yet have explicit
+relationships remain discoverable.
+
+The interactive HTML export can be opened directly in a modern browser without
+the backend or an internet connection. It preserves search, type filters,
+zooming, panning, node dragging, and the node detail panel.
+
 ## Technology Stack
 
 - Python 3.9
@@ -102,6 +126,21 @@ downloads always preserve the complete world-state result.
 - spaCy
 - DeepSeek Chat Completions API
 - HTML, CSS, and vanilla JavaScript
+
+## Netlify Deployment
+
+The repository includes `netlify.toml` and lightweight Netlify Functions for a
+production-hosted version:
+
+```bash
+netlify env:set DEEPSEEK_API_KEY your-key
+netlify deploy --prod
+```
+
+Netlify cannot host the large AllenNLP/SpanBERT runtime, so the cloud deployment
+passes source text directly to DeepSeek. The local FastAPI/WSL workflow
+continues to perform coreference resolution before generation. Both deployments
+support detailed acts, the interactive graph, and all export formats.
 
 Confirmed local environment versions:
 
@@ -140,6 +179,34 @@ files, local text data, generated outputs, and API keys are not committed.
 Browser snapshots are stored with `localStorage`. They remain in the current
 browser only, are not uploaded to the server, and do not call DeepSeek again
 when loaded.
+
+## Performance and Warm-Up
+
+The SpanBERT coreference model is large. On CPU, the first model load can take
+several minutes, while subsequent short requests are much faster.
+
+The application starts loading SpanBERT in a background thread as soon as the
+FastAPI server starts. The browser shows `模型预热中` until the model is ready.
+Keep the server running between requests to avoid repeating the cold start.
+
+The process also keeps two in-memory caches:
+
+- up to 128 repeated coreference chunks,
+- up to 16 complete World Status results.
+
+Submitting the same text again can therefore return immediately without
+repeating DeepSeek API usage. These caches reset whenever the server restarts.
+
+Optional performance environment variables:
+
+```env
+# Load the coreference model automatically when the server starts.
+COREF_PRELOAD=1
+
+# Use CPU. Set this to 0 only when CUDA-enabled PyTorch and a compatible GPU
+# are available inside the runtime environment.
+COREF_CUDA_DEVICE=-1
+```
 
 ## Requirements
 
@@ -228,6 +295,52 @@ You can use the provided script:
 ```bash
 bash scripts/download_spanbert.sh
 python scripts/check_spanbert.py
+```
+
+The download script resolves the model directory relative to the repository.
+It therefore works from the current WSL project path without a hard-coded
+drive letter.
+
+## WSL Location And Startup
+
+The registered Ubuntu distribution may be stored on a Windows drive such as:
+
+```text
+E:\WSL\Ubuntu
+```
+
+That storage path contains the WSL virtual disk. It is not the path used by
+Linux commands. This repository is currently available inside WSL at:
+
+```text
+/mnt/e/AllenNLP/backend
+```
+
+From Windows PowerShell, start the WSL backend and long-running local proxy
+with:
+
+```powershell
+.\scripts\start_wsl_stack.ps1
+```
+
+The PowerShell launcher derives the WSL project path from the current
+repository location, starts the Linux virtual environment, discovers the
+current WSL IP address, and exposes the application at:
+
+```text
+http://127.0.0.1:8000/
+```
+
+For a quick interface or health check without loading SpanBERT:
+
+```powershell
+.\scripts\start_wsl_stack.ps1 -SkipModelPreload
+```
+
+To run only the backend from inside WSL:
+
+```bash
+bash scripts/start_wsl_backend.sh 8001
 ```
 
 If Hugging Face is unavailable, use a mirror endpoint:
@@ -339,6 +452,28 @@ The `world_state` object is generated by DeepSeek and is expected to contain:
 
 ```text
 summary
+acts
+  act_number
+  title
+  dramatic_purpose
+  opening_state
+  scenes
+    title
+    location
+    time
+    participants
+    objective
+    beats
+    conflict
+    discoveries
+    player_choices
+    consequences
+    transition
+  character_changes
+  clues_revealed
+  unresolved_threads
+  closing_state
+  next_act_hook
 characters
 locations
 factions
@@ -351,6 +486,10 @@ context_variables
   atmosphere
   scene_state
 ```
+
+The frontend renders `acts` as a dedicated act-and-scene view. Each act captures
+its dramatic purpose and state transition, while each scene provides concrete
+beats, discoveries, player choices, and consequences for play.
 
 For backward compatibility, if the model returns legacy top-level `atmosphere`
 or `scene_state` fields, the backend normalizes them into

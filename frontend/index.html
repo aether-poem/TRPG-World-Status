@@ -82,7 +82,7 @@
                 共指分块
                 <input id="maxChars" type="number" min="300" max="3000" step="100" value="1200" />
               </label>
-              <button id="runButton" type="button">生成本体化世界状态</button>
+              <button id="runButton" type="button" disabled>等待模型预热</button>
             </div>
           </section>
 
@@ -103,6 +103,55 @@
           </section>
         </div>
 
+        <section id="actsPanel" class="panel acts-panel">
+          <div class="panel-head">
+            <div>
+              <h2>分幕剧本</h2>
+              <p class="panel-note">按戏剧转折拆分为幕与可游玩的细化场景</p>
+            </div>
+            <div class="section-actions">
+              <span id="actsCount" class="acts-count">等待分幕内容</span>
+              <button id="downloadActsButton" type="button" disabled>导出分幕 JSON</button>
+            </div>
+          </div>
+          <div id="actsOutput" class="acts-output"></div>
+        </section>
+
+        <section class="panel graph-panel">
+          <div class="panel-head graph-head">
+            <div>
+              <h2>交互知识图谱</h2>
+              <p id="graphCount" class="panel-note">等待 World Status JSON</p>
+            </div>
+            <div class="graph-actions">
+              <label class="file-button">
+                <input id="graphFileInput" type="file" accept=".json,application/json" />
+                导入 World Status JSON
+              </label>
+              <input id="graphSearch" type="search" placeholder="搜索节点或属性" />
+              <button id="graphResetButton" type="button">重置视图</button>
+              <button id="downloadGraphButton" type="button" disabled>导出图谱 SVG</button>
+              <button id="downloadInteractiveGraphButton" type="button" disabled>导出交互 HTML</button>
+            </div>
+          </div>
+          <div id="graphLegend" class="graph-legend" aria-label="图谱节点类型筛选"></div>
+          <div class="graph-workspace">
+            <div id="graphCanvas" class="graph-canvas">
+              <svg id="graphSvg" aria-label="World Status 交互知识图谱">
+                <g id="graphViewport"></g>
+              </svg>
+              <p id="graphEmpty" class="graph-empty">生成、载入快照或导入 JSON 后将在这里显示知识图谱。</p>
+            </div>
+            <aside class="graph-detail">
+              <span id="graphDetailType">节点详情</span>
+              <h3 id="graphDetailTitle">点击图谱节点</h3>
+              <div id="graphDetailBody">
+                <p>人物、地点、阵营、物品、事件、任务和开放线索会从同一份 World Status JSON 中自动建立连接。</p>
+              </div>
+            </aside>
+          </div>
+        </section>
+
         <section class="panel resolved-panel">
           <div class="panel-head">
             <h2>共指消解结果</h2>
@@ -113,6 +162,7 @@
       </section>
     </main>
 
-    <script src="/static/app.js?v=20260609-4"></script>
+    <script src="/static/graph.js?v=20260611-3"></script>
+    <script src="/static/app.js?v=20260611-3"></script>
   </body>
 </html>

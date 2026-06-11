@@ -104,7 +104,56 @@ def _normalize_world_state(world_state):
         world_state.pop("scene_state", None)
 
     world_state["context_variables"] = context
+    if not isinstance(world_state.get("acts"), list):
+        world_state["acts"] = []
     return world_state
+
+
+def build_world_state_prompt(text):
+    """Build a detailed act-and-scene oriented world-state request."""
+    return f"""
+Extract a detailed, playable TRPG world state from the narrative below.
+Return one JSON object with these top-level fields:
+- summary: a concise current-story summary.
+- acts: an ordered array dividing the narrative into dramatic acts. Prefer 3-6
+  acts when the source supports them. Each act must contain:
+  - act_number: integer starting at 1.
+  - title: a distinctive act title.
+  - dramatic_purpose: what this act changes or establishes.
+  - opening_state: the situation at the start of the act.
+  - scenes: an ordered array of detailed playable scenes. Each scene contains
+    title, location, time, participants, objective, beats, conflict,
+    discoveries, player_choices, consequences, and transition.
+    beats, participants, discoveries, player_choices, and consequences are arrays.
+    Write 3-6 concrete beats for each substantial scene.
+  - character_changes: array describing changes in goals, knowledge, emotion, or status.
+  - clues_revealed: array of clues revealed during the act.
+  - unresolved_threads: array of questions carried forward.
+  - closing_state: the world state at the end of the act.
+  - next_act_hook: the pressure or question that leads into the next act.
+- characters: array; each item contains name, description, goals, secrets, status.
+- locations: array; each item contains name, description, hazards, clues.
+- factions: array; each item contains name, agenda, resources, relationships.
+- items: narrative objects or clues; each item contains name, description, owner, importance.
+- relationships: array; each item contains source, target, relation.
+- timeline: ordered array of concise NarrativeEvent strings.
+- quests: array; each item contains title, hook, objective, stakes.
+- open_threads: array of unresolved questions or possible follow-up actions.
+- context_variables: object containing atmosphere and scene_state.
+
+Make the acts and scenes more detailed than the global summary. Separate acts at
+meaningful reversals, revelations, changes of goal, or changes of location/time.
+Treat items as 叙事物件/线索 (NarrativeObject / Clue), timeline entries as
+弱结构化叙事事件, and make group membership clear enough to infer
+belongsToCollective.
+Do not invent certain facts unsupported by the source. Uncertain inferences must
+be clearly described as possibilities. Use empty arrays, strings, or objects when
+information is absent. Keep proper nouns in their original language and write
+other values in concise Chinese.
+
+Narrative:
+{text}
+""".strip()
 
 
 def generate_world_state(text, temperature=0.2):
